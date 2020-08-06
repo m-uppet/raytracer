@@ -115,11 +115,24 @@ inline vec3 unit_vector(vec3 v) {
     return v / v.length();
 }
 
-vec3 random_in_unit_sphere() {
-    while(true) {
-        auto p = vec3::random(-1, 1);
-        if (p.length_squared() >= 1) continue;
-        return p;
-    }
+// Hemispherical diffuse method
+// Uniform scatter direction of rays from the hit point
+vec3 random_in_hemisphere(const vec3& normal) {
+    vec3 in_unit_sphere = random_in_unit_sphere();
+    if (dot(in_unit_sphere, normal) > 0.0) // In the same hemisphere as the normal
+        return in_unit_sphere;
+    else
+        return -in_unit_sphere;
+}
+
+// Lambertian diffuse method
+// Generates random unit vector offset from the hit point by the normal
+// 1. Pick random plane that intersects sphere.
+// 2. Pick random angle for polar coordinates of point (r, a) in intersection.
+vec3 random_unit_vector() {
+    auto a = random_double(0, 2*pi);
+    auto z = random_double(-1, 1);
+    auto r = sqrt(1 - z*z);
+    return vec3(r*cos(a), r*sin(a), z);
 }
 #endif
