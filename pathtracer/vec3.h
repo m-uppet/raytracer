@@ -144,4 +144,9 @@ vec3 random_unit_vector() {
     auto r = sqrt(1 - z*z);
     return vec3(r*cos(a), r*sin(a), z);
 }
+
+// Returns vector of reflected ray for surface of normal n and ray of incident vector v.
+vec3 reflect(const vec3& v, const vec3& n) {
+    return v - 2*dot(v, n)*n;
+}
 #endif
