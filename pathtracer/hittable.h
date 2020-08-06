@@ -1,7 +1,10 @@
 #ifndef HITTABLE_H
 #define HITTABLE_H
 
+#include "utilities.h"
 #include "ray.h"
+
+class material;
 
 /* front_face boolean records which side of the surface the ray hits, so as to have the normal
 always facing against the ray. Alternative solution : normal always points to the outside, and we
@@ -10,6 +13,7 @@ hits.*/
 struct hit_record {
     point3 p;
     vec3 normal;
+    shared_ptr<material> mat_ptr;
     double t;
     bool front_face;
 

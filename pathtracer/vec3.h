@@ -115,6 +115,15 @@ inline vec3 unit_vector(vec3 v) {
     return v / v.length();
 }
 
+// Returns random unit vector
+vec3 random_in_unit_sphere() {
+    while (true) {
+        auto p = vec3::random(-1,1);
+        if (p.length_squared() >= 1) continue;
+        return p;
+    }
+}
+
 // Hemispherical diffuse method
 // Uniform scatter direction of rays from the hit point
 vec3 random_in_hemisphere(const vec3& normal) {
