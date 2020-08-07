@@ -30,6 +30,7 @@ color ray_color(const ray& r, const hittable& world, int depth) {
     return (1.0-t)*color(1.0, 1.0, 1.0) + t*color(0.5, 0.7, 1.0);
 }
 
+
 int main() {
 
     // Image
@@ -40,12 +41,12 @@ int main() {
     const int max_depth = 50;
 
     // World
-    hittable_list world;
+
 
     auto material_ground = make_shared<lambertian>(color(0.8, 0.8, 0.0));
-    auto material_center = make_shared<lambertian>(color(0.7, 0.3, 0.3));
-    auto material_left   = make_shared<metal>(color(0.8, 0.8, 0.8));
-    auto material_right  = make_shared<metal>(color(0.8, 0.6, 0.2));
+    auto material_center = make_shared<lambertian>(color(0.7, 0.3, 0.5));
+    auto material_left   = make_shared<dielectric>(1.5);
+    auto material_right  = make_shared<metal>(color(0.8, 0.6, 0.2), 0.2);
 
     world.add(make_shared<sphere>(point3( 0.0, -100.5, -1.0), 100.0, material_ground));
     world.add(make_shared<sphere>(point3( 0.0,    0.0, -1.0),   0.5, material_center));
@@ -53,8 +54,13 @@ int main() {
     world.add(make_shared<sphere>(point3( 1.0,    0.0, -1.0),   0.5, material_right));
 
     // Camera
-    camera cam;
+    point3 lookfrom(3,3,2);
+    point3 lookat(0,0,-1);
+    vec3 vup(0,1,0);
+    auto focus_dist = (lookfrom-lookat).length();
+    auto aperture = 2.0;
 
+    camera cam(lookfrom, lookat, vup, 20, aspect_ratio, aperture, focus_dist);
     // Render
 
     std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";

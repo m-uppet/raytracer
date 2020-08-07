@@ -106,13 +106,22 @@ inline double dot(const vec3 &v, const vec3 &u) {
 }
 
 inline vec3 cross(const vec3 &v, const vec3 &u) {
-    return vec3(u.e[1] * v.e[2] - u.e[2] * v.e[1],
-                u.e[2] * v.e[0] - u.e[0] * v.e[2],
-                u.e[0] * v.e[1] - u.e[1] * v.e[0]);
+    return vec3(v.e[1] * u.e[2] - v.e[2] * u.e[1],
+                v.e[2] * u.e[0] - v.e[0] * u.e[2],
+                v.e[0] * u.e[1] - v.e[1] * u.e[0]);
 }
 
 inline vec3 unit_vector(vec3 v) {
     return v / v.length();
+}
+
+// Returns random point in unit disk
+vec3 random_in_unit_disk() {
+    while (true) {
+        auto p = vec3(random_double(-1, 1), random_double(-1, 1), 0);
+        if (p.length_squared() >= 1) continue;
+        return p;
+    }
 }
 
 // Returns random unit vector
@@ -148,5 +157,14 @@ vec3 random_unit_vector() {
 // Returns vector of reflected ray for surface of normal n and ray of incident vector v.
 vec3 reflect(const vec3& v, const vec3& n) {
     return v - 2*dot(v, n)*n;
+}
+
+// Refraction function (snell's law)
+// Returns refracted ray vector
+vec3 refract(const vec3& uv, const vec3& n, double refract_quotient) {
+    auto cos_theta = dot(-uv, n);
+    vec3 r_out_perp = refract_quotient * (uv + cos_theta*n);
+    vec3 r_out_parallel = -sqrt(1.0 - r_out_perp.length_squared())*n;
+    return r_out_perp + r_out_parallel;
 }
 #endif
