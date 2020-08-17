@@ -26,7 +26,7 @@ public:
     lambertian(const color& a) : albedo(a) {};
     virtual bool scatter(
         const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const override {
-        vec3 scatter_direction = rec.p + rec.normal + random_unit_vector();
+        vec3 scatter_direction = rec.normal + random_unit_vector();
         scattered = ray(rec.p, scatter_direction);
         attenuation = albedo;
         return true;
@@ -64,15 +64,10 @@ public:
         // Reflection inside the dielectric surface
         double cos_theta = fmin(dot(-unit_direction, rec.normal), 1.0);
         double sin_theta = sqrt(1.0 - cos_theta*cos_theta);
-        if (refract_quotient * sin_theta > 1.0 ) {
-            vec3 reflected = reflect(unit_direction, rec.normal);
-            scattered = ray(rec.p, reflected);
-            return true;
-        }
-
+        
         // Schlick approximation
-        double reflect_prob = schlick(cos_theta, refract_quotient);
-        if (random_double() < reflect_prob) {
+        if (refract_quotient * sin_theta > 1.0
+                || (random_double() < schlick(cos_theta, refract_quotient)) ) {
             vec3 reflected = reflect(unit_direction, rec.normal);
             scattered = ray(rec.p, reflected);
             return true;

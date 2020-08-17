@@ -3,3 +3,4 @@ astylerc
 *.exe
 *.ppm
 *.docx
+/archives
