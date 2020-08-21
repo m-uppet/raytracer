@@ -9,7 +9,9 @@ public:
     sphere() {}
     sphere(point3 c, double r, shared_ptr<material> m) : center(c), radius(r), mat_ptr(m) {}
 
-    virtual bool hit(const ray& r, double t_min, double t_max, hit_record& rec) const override;
+    virtual bool hit(const ray& r, double tmin, double tmax, hit_record& rec) const override;
+
+    virtual bool bounding_box(aabb& output_box, double t0, double t1) const override;
 
 public:
     point3 center;
@@ -17,7 +19,7 @@ public:
     shared_ptr<material> mat_ptr;
 };
 
-bool sphere::hit(const ray& r, double t_min, double t_max, hit_record& rec) const {
+bool sphere::hit(const ray& r, double tmin, double tmax, hit_record& rec) const {
     vec3 oc = r.origin() - center;
     auto a = r.direction().length_squared();
     auto half_b = dot(oc, r.direction());
@@ -29,9 +31,9 @@ bool sphere::hit(const ray& r, double t_min, double t_max, hit_record& rec) cons
     if (discriminant > 0 ) {
         auto root = sqrt(discriminant);
 
-        // Check if the hit is within the allowed interval t_min to t_max
+        // Check if the hit is within the allowed interval tmin to tmax
         auto temp = (-half_b - root)/a;
-        if (temp < t_max && temp > t_min) {
+        if (temp < tmax && temp > tmin) {
             rec.t = temp;
             rec.p = r.at(rec.t);
             vec3 outward_normal = (rec.p - center)/radius; // The normal is of length 1
@@ -41,7 +43,7 @@ bool sphere::hit(const ray& r, double t_min, double t_max, hit_record& rec) cons
         }
 
         temp = (-half_b + root)/a;
-        if (temp < t_max && temp > t_min) {
+        if (temp < tmax && temp > tmin) {
             rec.t = temp;
             rec.p = r.at(rec.t);
             vec3 outward_normal = (rec.p - center)/radius; // The normal is of length 1
@@ -52,6 +54,12 @@ bool sphere::hit(const ray& r, double t_min, double t_max, hit_record& rec) cons
     }
 
     return false;
+}
+
+bool sphere::bounding_box(aabb& output_box, double t0, double t1) const {
+    output_box = aabb(center - vec3(radius, radius, radius),
+                      center + vec3(radius, radius, radius));
+    return true;
 }
 
 #endif
