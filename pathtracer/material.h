@@ -25,7 +25,7 @@ public:
 // attenuation and absorb 1-R of rays, or mixture of both. Here it always scatters.
 class lambertian : public material {
 public:
-    lambertian(const color& a) : albedo(make_shared<solid_color>(a)) {}
+    lambertian(const color& a) : albedo(make_shared<solid_texture>(a)) {}
     lambertian(shared_ptr<texture> a) : albedo(a) {};
     virtual bool scatter(
         const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const override {
