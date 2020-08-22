@@ -13,7 +13,7 @@ public:
 
     solid_texture(double red, double green, double blue)
         : solid_texture(color(red, green, blue)) {}
-    
+
     virtual color value(double u, double v, const point3& p) const override {
         return color_value;
     }
@@ -22,5 +22,25 @@ private:
     color color_value;
 };
 
+class checker_texture : public texture {
+public:
+    checker_texture() {}
+    checker_texture(shared_ptr<texture> t0, shared_ptr<texture> t1) : even(t0), odd(t1) {}
+
+    checker_texture(color c0, color c1)
+        : even(make_shared<solid_texture>(c0)), odd(make_shared<solid_texture>(c1)) {}
+
+    virtual color value(double u, double v, const point3& p) const override {
+        // trig function products are negative or positive periodically
+        auto sines = sin(10*p.x()) * sin(10*p.y()) * sin(10*p.z());
+        if (sines < 0) {
+            return odd->value(u, v, p);
+        }
+        return even->value(u, v, p);
+    }
+public:
+    shared_ptr<texture> even;
+    shared_ptr<texture> odd;
+};
 
 #endif
