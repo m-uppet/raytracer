@@ -53,7 +53,7 @@ public:
     virtual color value(double u, double v, const point3& p) const override {
         // Make sure the return value is between 0 and 1 to avoid NaNs in color.h sqrt() in the
         // gamma function
-        return color(1, 1, 1) * 0.5 * (1.0 + noise.noise(scale * p));
+        return color(1, 1, 1) * 0.5 * (1.0 + sin(scale*p.z() + 10.0 * noise.turb(scale * p)));
     }
 
 public:
