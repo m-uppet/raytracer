@@ -21,10 +21,11 @@ public:
 
 // Maps x,y,z coordinates on unit sphere to u,v coordinates
 void get_sphere_uv(const point3& p, double& u, double& v) {
+    // u and v should be between 0 and 1
     auto phi = atan2(p.z(), p.x());
-    auto theta = acos(p.y());
-    u = phi / (2*pi);
-    v = theta / pi;
+    auto theta = asin(p.y());
+    u = 1 - (phi + pi)/(2*pi);
+    v = (theta + pi/2) / pi;
 }
 
 bool sphere::hit(const ray& r, double tmin, double tmax, hit_record& rec) const {
@@ -46,7 +47,7 @@ bool sphere::hit(const ray& r, double tmin, double tmax, hit_record& rec) const 
             rec.p = r.at(rec.t);
             vec3 outward_normal = (rec.p - center)/radius; // The normal is of length 1
             rec.set_face_normal(r, outward_normal);
-            get_sphere_uv((rec.p - center / radius), rec.u, rec.v);
+            get_sphere_uv((rec.p - center) / radius, rec.u, rec.v);
             rec.mat_ptr = mat_ptr;
             return true;
         }
@@ -57,7 +58,7 @@ bool sphere::hit(const ray& r, double tmin, double tmax, hit_record& rec) const 
             rec.p = r.at(rec.t);
             vec3 outward_normal = (rec.p - center)/radius; // The normal is of length 1
             rec.set_face_normal(r, outward_normal);
-            get_sphere_uv((rec.p - center / radius), rec.u, rec.v);
+            get_sphere_uv((rec.p - center) / radius, rec.u, rec.v);
             rec.mat_ptr = mat_ptr;
             return true;
         }
