@@ -19,6 +19,10 @@ class material {
 public:
     virtual bool scatter(
         const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const = 0;
+    
+    virtual color emitted(double u, double v, const point3& p) const {
+        return color(0, 0, 0);
+    }
 };
 
 // Lambertian materials could scatter always and attenuate by reflectance R, or scatter with no
@@ -67,7 +71,7 @@ public:
         // Reflection inside the dielectric surface
         double cos_theta = fmin(dot(-unit_direction, rec.normal), 1.0);
         double sin_theta = sqrt(1.0 - cos_theta*cos_theta);
-        
+
         // Schlick approximation
         if (refract_quotient * sin_theta > 1.0
                 || (random_double() < schlick(cos_theta, refract_quotient)) ) {
@@ -83,6 +87,24 @@ public:
 
 public:
     double ref_idx;
+};
+
+class diffuse_light : public material {
+public:
+    diffuse_light(shared_ptr<texture> a) : emit(a) {}
+    diffuse_light(color c) : emit(make_shared<solid_texture>(c)) {}
+
+    virtual bool scatter(
+        const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const override {
+            return false;
+    }
+
+    virtual color emitted(double u, double v, const point3& p) const override {
+        return emit->value(u, v, p);
+    }
+
+public:
+    shared_ptr<texture> emit;
 };
 
 #endif
