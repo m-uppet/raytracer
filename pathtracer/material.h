@@ -2,12 +2,12 @@
 #define MATERIAL_H
 
 #include "utilities.h"
-#include "moving_sphere.h"
+#include "hittable.h"
 #include "texture.h"
 
 struct hit_record;
 
-// Shlick approximation to take into account glass's reflectivity varying with angle
+// Schlick approximation to take into account glass's reflectivity varying with angle
 double schlick(double cosine, double ref_idx) {
     auto r0 = (1 - ref_idx) / (1 + ref_idx);
     r0 = r0 * r0;
@@ -30,7 +30,7 @@ public:
 class lambertian : public material {
 public:
     lambertian(const color& a) : albedo(make_shared<solid_texture>(a)) {}
-    lambertian(shared_ptr<texture> a) : albedo(a) {};
+    lambertian(shared_ptr<texture> a) : albedo(a) {}
     virtual bool scatter(
         const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const override {
         vec3 scatter_direction = rec.normal + random_unit_vector();

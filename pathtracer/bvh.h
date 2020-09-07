@@ -17,7 +17,7 @@ public:
     virtual bool hit(
         const ray& r, double tmin, double tmax, hit_record& rec) const override;
 
-    virtual bool bounding_box(aabb& output_box, double t0, double t1) const override;
+    virtual bool bounding_box(double t0, double t1, aabb& output_box) const override;
 
 public:
     shared_ptr<hittable> left;
@@ -26,7 +26,7 @@ public:
 
 };
 
-bool bvh_node::bounding_box(aabb& output_box, double t0, double t1) {
+bool bvh_node::bounding_box(double t0, double t1, aabb& output_box) {
     output_box = box;
     return true;
 }
@@ -62,7 +62,7 @@ bvh_node::bvh_node(
     aabb box_left, box_right;
 
     if (  !left->bounding_box (box_left, time0, time1)
-            || !right->bounding_box(box_right, time0, time1)
+            || !right->bounding_box(time0, time1, box_right)
        )
         std::cerr << "No bounding box in bvh_node constructor.\n";
 
@@ -73,7 +73,7 @@ inline bool box_compare(const shared_ptr<hittable> a, const shared_ptr<hittable>
     aabb box_a;
     aabb box_b;
 
-    if (!a->bounding_box(box_a,0,0) || !b->bounding_box(box_b,0,0))
+    if (!a->bounding_box(0,0, box_a) || !b->bounding_box(0,0, box_b))
         std::cerr << "No bounding box in bvh_node constructor.\n";
 
     return box_a.min().e[axis] < box_b.min().e[axis];

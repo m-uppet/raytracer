@@ -5,6 +5,7 @@
 #include "hittable_list.h"
 #include "material.h"
 #include "sphere.h"
+#include "moving_sphere.h"
 #include "aarect.h"
 
 #include <iostream>
@@ -83,10 +84,10 @@ hittable_list random_scene() {
 hittable_list two_spheres() {
     hittable_list objects;
 
-    auto checker = make_shared<checker_texture>(color(0.2, 0.3, 0.1), color(0.9, 0.9, 0.9));
-
-    objects.add(make_shared<sphere>(point3(0,-10, 0), 10, make_shared<lambertian>(checker)));
-    objects.add(make_shared<sphere>(point3(0, 10, 0), 10, make_shared<lambertian>(checker)));
+    // auto checker = make_shared<checker_texture>(color(0.2, 0.3, 0.1), color(0.9, 0.9, 0.9));
+    auto solid = make_shared<solid_texture>(color(0.5, 0.6, 0.5));
+    objects.add(make_shared<sphere>(point3(0,-10, 0), 10, make_shared<lambertian>(solid)));
+    objects.add(make_shared<sphere>(point3(0, 10, 0), 10, make_shared<lambertian>(solid)));
 
     return objects;
 }
@@ -103,7 +104,7 @@ hittable_list two_perlin_spheres() {
 }
 
 hittable_list earth() {
-    auto earth_texture = make_shared<image_texture>("earthmap.jpg");
+    auto earth_texture = make_shared<image_texture>("assets/earthmap.jpg");
     auto earth_surface = make_shared<lambertian>(earth_texture);
     auto globe = make_shared<sphere>(point3(0, 0, 0), 2, earth_surface);
 
@@ -115,9 +116,26 @@ hittable_list simple_light() {
     auto perlin_text = make_shared<noise_texture>(4);
     objects.add(make_shared<sphere>(point3(0,-1000, 0), 1000, make_shared<lambertian>(perlin_text)));
     objects.add(make_shared<sphere>(point3(0, 2, 0), 2, make_shared<lambertian>(perlin_text)));
-
     auto difflight = make_shared<diffuse_light>(color(4,4,4));
+    objects.add(make_shared<sphere>(point3(0, 7, 2), 1, difflight));
     objects.add(make_shared<xy_rect>(3, 5, 1, 2, -2, difflight));
+
+    return objects;
+}
+
+hittable_list cornell_box() {
+    hittable_list objects;
+    auto red = make_shared<lambertian>(color(.65,.05,.05));
+    auto green = make_shared<lambertian>(color(.12, .45, .15));
+    auto white = make_shared<lambertian>(color(.73,.73,.73));
+    auto light = make_shared<diffuse_light>(color(15, 15, 15));
+
+    objects.add(make_shared<yz_rect>(0, 555, 0, 555, 555, green));
+    objects.add(make_shared<yz_rect>(0, 555, 0, 555, 0, red));
+    objects.add(make_shared<xz_rect>(213, 343, 227, 332, 554, light));
+    objects.add(make_shared<xz_rect>(0, 555, 0, 555, 0, white));
+    objects.add(make_shared<xz_rect>(0, 555, 0, 555, 555, white));
+    objects.add(make_shared<xy_rect>(0, 555, 0, 555, 555, white));
 
     return objects;
 }
@@ -125,9 +143,8 @@ hittable_list simple_light() {
 int main() {
 
     // Image
-    const auto aspect_ratio = 16.0 / 9.0;
-    const int image_width = 500;
-    const int image_height = static_cast<int>(image_width / aspect_ratio);
+    auto aspect_ratio = 16.0 / 9.0;
+    int image_width = 500;
     int samples_per_pixel = 100;
     const int max_depth = 50;
 
@@ -174,7 +191,6 @@ int main() {
         vfov = 20.0;
         break;
 
-    default:
     case 5:
         world = simple_light();
         samples_per_pixel = 400;
@@ -183,13 +199,27 @@ int main() {
         lookat = point3(0,2,0);
         vfov = 20.0;
         break;
+
+    default:
+    case 6:
+        world = cornell_box();
+        aspect_ratio = 1.0;
+        image_width = 600;
+        samples_per_pixel = 200;
+        background = color(0,0,0);
+        lookfrom = point3(278, 278, -800);
+        lookat = point3(278, 278, 0);
+        vfov = 40.0;
+        break;
     }
 
     // Camera
     vec3 vup(0,1,0);
     auto focus_dist = 10.0;
+    const int image_height = static_cast<int>(image_width / aspect_ratio);
 
     camera cam(lookfrom, lookat, vup, 20, aspect_ratio, aperture, focus_dist, 0.0, 1.0);
+
     // Render
 
     std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
@@ -199,8 +229,8 @@ int main() {
         for (int i = 0; i < image_width; ++i) {
             color pixel_color(0, 0, 0);
             for (int s = 0; s < samples_per_pixel; ++s) {
-                auto u = double(i + random_double()) / (image_width-1);
-                auto v = double(j + random_double()) / (image_height-1);
+                auto u = (i + random_double()) / (image_width-1);
+                auto v = (j + random_double()) / (image_height-1);
                 ray r = cam.get_ray(u, v);
                 pixel_color += ray_color(r, background, world, max_depth);
             }
